@@ -486,6 +486,7 @@ void audio_mixer_destroy(audio_mixer_sound_t* sound)
 #endif
          break;
       case AUDIO_MIXER_TYPE_NONE:
+      case AUDIO_MIXER_TYPE_SYNTH:
          break;
    }
 
@@ -818,6 +819,7 @@ audio_mixer_voice_t* audio_mixer_play(audio_mixer_sound_t* sound, bool repeat,
 #endif
             break;
          case AUDIO_MIXER_TYPE_NONE:
+         case AUDIO_MIXER_TYPE_SYNTH:
             break;
       }
 

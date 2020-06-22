@@ -28026,6 +28026,7 @@ bool audio_driver_mixer_add_stream(audio_mixer_stream_params_t *params)
 #endif
          break;
       case AUDIO_MIXER_TYPE_NONE:
+      case AUDIO_MIXER_TYPE_SYNTH:
          break;
    }
 
