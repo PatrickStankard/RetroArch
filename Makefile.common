@@ -708,6 +708,10 @@ ifeq ($(HAVE_WINMM), 1)
    LIBS += -lwinmm
 endif
 
+# MIDI drivers
+
+OBJ += midi/drivers/tsf_midi.o
+
 # Audio Resamplers
 
 ifeq ($(HAVE_NEON),1)

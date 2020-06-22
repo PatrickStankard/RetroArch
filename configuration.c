@@ -310,6 +310,7 @@ enum midi_driver_enum
 {
    MIDI_WINMM               = RECORD_NULL + 1,
    MIDI_ALSA,
+   MIDI_TSF,
    MIDI_NULL
 };
 
@@ -1113,6 +1114,8 @@ const char *config_get_default_midi(void)
          return "winmm";
       case MIDI_ALSA:
          return "alsa";
+      case MIDI_TSF:
+         return "tsf";
       case MIDI_NULL:
          break;
    }

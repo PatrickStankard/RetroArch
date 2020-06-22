@@ -949,6 +949,7 @@ static const record_driver_t *record_drivers[] = {
 
 extern midi_driver_t midi_winmm;
 extern midi_driver_t midi_alsa;
+extern midi_driver_t midi_tsf;
 
 static void null_midi_free(void *p) { }
 static void *null_midi_init(const char *input, const char *output) { return (void*)-1; }
@@ -980,6 +981,7 @@ static midi_driver_t *midi_drivers[] = {
 #ifdef HAVE_WINMM
    &midi_winmm,
 #endif
+   &midi_tsf,
    &midi_null
 };
 
@@ -26862,6 +26864,12 @@ const char *audio_driver_mixer_get_stream_name(unsigned i)
    if (!string_is_empty(p_rarch->audio_mixer_streams[i].name))
       return p_rarch->audio_mixer_streams[i].name;
    return msg_hash_to_str(MENU_ENUM_LABEL_VALUE_NOT_AVAILABLE);
+}
+
+void audio_driver_mixer_set_active()
+{
+   struct rarch_state *p_rarch = &rarch_st;
+   p_rarch->audio_mixer_active = true;
 }
 
 static void audio_driver_mixer_deinit(struct rarch_state *p_rarch)

@@ -181,6 +181,12 @@ struct audio_mixer_voice
          struct module*    module;
       } mod;
 #endif
+
+      struct
+      {
+         audio_mixer_synth_cb_t synth_cb;
+         void*                  userdata;
+      } synth;
    } types;
 };
 
@@ -832,6 +838,29 @@ audio_mixer_voice_t* audio_mixer_play(audio_mixer_sound_t* sound, bool repeat,
    return voice;
 }
 
+audio_mixer_voice_t* audio_mixer_play_synth(audio_mixer_synth_cb_t synth_cb, void* userdata)
+{
+   unsigned i;
+   audio_mixer_voice_t* voice = s_voices;
+
+   for (i = 0; i < AUDIO_MIXER_MAX_VOICES; i++, voice++)
+   {
+      if (voice->type != AUDIO_MIXER_TYPE_NONE)
+         continue;
+
+      voice->type     = AUDIO_MIXER_TYPE_SYNTH;
+      voice->repeat   = false;
+      voice->volume   = 1;
+      voice->sound    = NULL;
+      voice->stop_cb  = NULL;
+      voice->types.synth.synth_cb = synth_cb;
+      voice->types.synth.userdata = userdata;
+      return voice;
+   }
+
+   return NULL;
+}
+
 void audio_mixer_stop(audio_mixer_voice_t* voice)
 {
    audio_mixer_stop_cb_t stop_cb = NULL;
@@ -1227,6 +1256,9 @@ void audio_mixer_mix(float* buffer, size_t num_frames, float volume_override, bo
 #ifdef HAVE_DR_MP3
             audio_mixer_mix_mp3(buffer, num_frames, voice, volume);
 #endif
+            break;
+         case AUDIO_MIXER_TYPE_SYNTH:
+            voice->types.synth.synth_cb(voice->types.synth.userdata, buffer, num_frames, volume);
             break;
          case AUDIO_MIXER_TYPE_NONE:
             break;

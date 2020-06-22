@@ -43,13 +43,16 @@ enum audio_mixer_type
    AUDIO_MIXER_TYPE_OGG,
    AUDIO_MIXER_TYPE_MOD,
    AUDIO_MIXER_TYPE_FLAC,
-   AUDIO_MIXER_TYPE_MP3
+   AUDIO_MIXER_TYPE_MP3,
+   AUDIO_MIXER_TYPE_SYNTH,
 };
 
 typedef struct audio_mixer_sound audio_mixer_sound_t;
 typedef struct audio_mixer_voice audio_mixer_voice_t;
 
 typedef void (*audio_mixer_stop_cb_t)(audio_mixer_sound_t* sound, unsigned reason);
+
+typedef void (*audio_mixer_synth_cb_t)(void* p, float* buffer, size_t frames, float volume);
 
 /* Reasons passed to the stop callback. */
 #define AUDIO_MIXER_SOUND_FINISHED 0
@@ -70,6 +73,8 @@ void audio_mixer_destroy(audio_mixer_sound_t* sound);
 
 audio_mixer_voice_t* audio_mixer_play(audio_mixer_sound_t* sound,
       bool repeat, float volume, audio_mixer_stop_cb_t stop_cb);
+
+audio_mixer_voice_t* audio_mixer_play_synth(audio_mixer_synth_cb_t synth_cb, void* userdata);
 
 void audio_mixer_stop(audio_mixer_voice_t* voice);
 
