@@ -13,9 +13,13 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
- #include <libretro.h>
+#include <libretro.h>
+#include <rthreads/rthreads.h>
+#include <lists/string_list.h>
 
- #include "../midi_driver.h"
+#include "../../configuration.h"
+#include "../../retroarch.h"
+#include "../midi_driver.h"
 
 #define TSF_IMPLEMENTATION
 #include <tsf/tsf.h>
