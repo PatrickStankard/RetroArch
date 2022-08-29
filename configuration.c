@@ -37,6 +37,7 @@
 #include "configuration.h"
 #include "content.h"
 #include "config.def.h"
+#include "config.def.keybinds.h"
 #include "config.features.h"
 #include "input/input_keymaps.h"
 #include "input/input_remapping.h"
@@ -4414,11 +4415,14 @@ const char *input_config_get_prefix(unsigned user, bool meta)
 static void input_config_save_keybinds_user(config_file_t *conf, unsigned user)
 {
    unsigned i = 0;
+   const struct retro_keybind* keybind_defaults =
+      (user ? retro_keybinds_rest : retro_keybinds_1);
 
    for (i = 0; input_config_bind_map_get_valid(i); i++)
    {
       char key[64];
       char btn[64];
+      size_t len;
       const struct input_bind_map *keybind =
          (const struct input_bind_map*)INPUT_CONFIG_BIND_MAP_GET(i);
       bool meta                            = keybind ? keybind->meta : false;
@@ -4432,7 +4436,32 @@ static void input_config_save_keybinds_user(config_file_t *conf, unsigned user)
       base                                 = keybind->base;
       btn[0]                               = '\0';
 
-      fill_pathname_join_delim(key, prefix, base, '_', sizeof(key));
+      len = fill_pathname_join_delim(key, prefix, base, '_', sizeof(key));
+
+      if (!memcmp(bind, &keybind_defaults[i], sizeof(*bind)))
+      {
+         /* binding equals the default, clear config entries */
+         config_unset(conf, key);
+         key[len  ] = '_';
+         key[len+1] = 'b';
+         key[len+2] = 't';
+         key[len+3] = 'n';
+         key[len+4] = '\0';
+         config_unset(conf, key);
+         key[len+1] = 'a';
+         key[len+2] = 'x';
+         key[len+3] = 'i';
+         key[len+4] = 's';
+         key[len+5] = '\0';
+         config_unset(conf, key);
+         key[len+1] = 'm';
+         key[len+2] = 'b';
+         key[len+3] = 't';
+         key[len+4] = 'n';
+         key[len+5] = '\0';
+         config_unset(conf, key);
+         continue;
+      }
 
       input_keymaps_translate_rk_to_str(bind->key, btn, sizeof(btn));
       config_set_string(conf, key, btn);
