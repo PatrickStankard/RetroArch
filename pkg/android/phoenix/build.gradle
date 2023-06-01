@@ -57,17 +57,7 @@ android {
 
       dimension "variant"
       ndk {
-        abiFilters 'arm64-v8a', 'x86_64'
-      }
-    }
-    ra32 {
-      applicationIdSuffix '.ra32'
-      resValue "string", "app_name", "RetroArch (32-bit)"
-      buildConfigField "boolean", "PLAY_STORE_BUILD", "false"
-
-      dimension "variant"
-      ndk {
-        abiFilters 'armeabi-v7a', 'x86'
+        abiFilters 'arm64-v8a'
       }
     }
     playStoreNormal {
@@ -110,9 +100,6 @@ android {
     aarch64 {
       java.srcDirs += ['../play-core-stub']
       res.srcDirs = ['res', 'res64']
-    }
-    ra32 {
-      java.srcDirs += ['../play-core-stub']
     }
     playStoreNormal {
       java.srcDirs += ['../play-core-impl']

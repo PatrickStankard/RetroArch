@@ -13,8 +13,7 @@ jobs:
     - name: Execute Gradle build
       run: |
         cd pkg/android/phoenix
-        ./gradlew tasks
-        #./gradlew assembleDebug
+        ./gradlew assembleDebug
         find . -iname "*.apk"
 
     - name: Upload apk file
