@@ -1,6 +1,10 @@
  name: Android Push Build
 
-on: [push]
+on:
+  push:
+  pull_request:
+  repository_dispatch:
+    types: [run_build]
 
 jobs:
   build:
