@@ -13,10 +13,13 @@ jobs:
     - name: Execute Gradle build
       run: |
         cd pkg/android/phoenix
-        ./gradlew assembleDebug
+        ./gradlew tasks
+        #./gradlew assembleDebug
+        find . -iname "*.apk"
 
     - name: Upload apk file
       uses: actions/upload-artifact@v1
       with:
         name: apk
-        path: build/outputs/apk/normal/debug/phoenix-normal-debug.apk
+        path: pkg/android/phoenix/build/outputs/apk/normal/debug/phoenix-normal-debug.apk
+
