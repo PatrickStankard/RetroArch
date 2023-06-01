@@ -1,0 +1,22 @@
+ name: Android Push Build
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Execute Gradle build
+      run: |
+        cd pkg/android/phoenix
+        ./gradlew assembleDebug
+
+    - name: Upload apk file
+      uses: actions/upload-artifact@v1
+      with:
+        name: apk
+        path: build/outputs/apk/normal/debug/phoenix-normal-debug.apk
