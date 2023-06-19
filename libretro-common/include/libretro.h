@@ -3079,7 +3079,7 @@ typedef void (RETRO_CALLCONV *retro_netpacket_send_t)(const void* buf, size_t le
  * If client_id is > 0 the local player is a client connected to a host and
  * at this point is already fully connected to the host.
  */
-typedef void (RETRO_CALLCONV *retro_netpacket_ready_t)(uint16_t client_id, retro_netpacket_send_t send_fn);
+typedef void (RETRO_CALLCONV *retro_netpacket_start_t)(uint16_t client_id, retro_netpacket_send_t send_fn);
 
 /* Called by the frontend when a new packet arrives which has been sent from
  * a connected player with retro_netpacket_send_t.
@@ -3091,9 +3091,9 @@ typedef void (RETRO_CALLCONV *retro_netpacket_receive_t)(const void* buf, size_t
 
 /* Called by the frontend when the multiplayer session has ended.
  */
-typedef void (RETRO_CALLCONV *retro_netpacket_shutdown_t)(void);
+typedef void (RETRO_CALLCONV *retro_netpacket_stop_t)(void);
 
-/* Called by the frontend every frame between calls to retro_run while
+/* Called by the frontend every frame (between calls to retro_run while
  * updating the state of the multiplayer session.
  * This is a good place for the core to call retro_netpacket_send_t from.
  */
@@ -3117,12 +3117,12 @@ typedef void (RETRO_CALLCONV *retro_netpacket_disconnected_t)(uint16_t client_id
  */
 struct retro_netpacket_callback
 {
-   retro_netpacket_ready_t        net_ready;
-   retro_netpacket_receive_t      packet_received;
-   retro_netpacket_shutdown_t     net_shutdown;        /* Optional - may be NULL */
-   retro_netpacket_poll_t         net_poll;            /* Optional - may be NULL */
-   retro_netpacket_connected_t    client_connected;    /* Optional - may be NULL */
-   retro_netpacket_disconnected_t client_disconnected; /* Optional - may be NULL */
+   retro_netpacket_start_t        start;
+   retro_netpacket_receive_t      receive;
+   retro_netpacket_stop_t         stop;         /* Optional - may be NULL */
+   retro_netpacket_poll_t         poll;         /* Optional - may be NULL */
+   retro_netpacket_connected_t    connected;    /* Optional - may be NULL */
+   retro_netpacket_disconnected_t disconnected; /* Optional - may be NULL */
 };
 
 enum retro_pixel_format

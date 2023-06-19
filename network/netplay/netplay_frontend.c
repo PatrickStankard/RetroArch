@@ -1881,8 +1881,8 @@ static bool netplay_handshake_pre_sync(netplay_t *netplay,
 
    /* Tell a core that uses the netpacket interface that the client is ready */
    if (networking_driver_st.core_netpacket_interface &&
-         networking_driver_st.core_netpacket_interface->net_ready)
-      networking_driver_st.core_netpacket_interface->net_ready
+         networking_driver_st.core_netpacket_interface->start)
+      networking_driver_st.core_netpacket_interface->start
             ((uint16_t)netplay->self_client_num, netplay_netpacket_send);
 
    /* Ask to switch to playing mode if we should */
@@ -4084,8 +4084,8 @@ static void netplay_hangup(netplay_t *netplay,
 
    if (networking_driver_st.core_netpacket_interface
          && was_playing && netplay->is_server
-         && networking_driver_st.core_netpacket_interface->client_disconnected)
-      networking_driver_st.core_netpacket_interface->client_disconnected
+         && networking_driver_st.core_netpacket_interface->disconnected)
+      networking_driver_st.core_netpacket_interface->disconnected
             ((uint16_t)(connection - netplay->connections + 1));
 
    RARCH_LOG("[Netplay] %s\n", dmsg);
@@ -4813,8 +4813,8 @@ static void handle_play_spectate(netplay_t *netplay,
                   connection->mode, devices, connection->ping);
 
                if (networking_driver_st.core_netpacket_interface
-                     && networking_driver_st.core_netpacket_interface->client_connected)
-                  networking_driver_st.core_netpacket_interface->client_connected
+                     && networking_driver_st.core_netpacket_interface->connected)
+                  networking_driver_st.core_netpacket_interface->connected
                         ((uint16_t)(connection - netplay->connections + 1));
             }
             else
@@ -6179,11 +6179,11 @@ static bool netplay_get_cmd(netplay_t *netplay,
             RECV(netplay->zbuffer, cmd_size)
                return false;
 
-            if (networking_driver_st.core_netpacket_interface->packet_received)
+            if (networking_driver_st.core_netpacket_interface->receive)
             {
                uint16_t client_id = (!netplay->is_server ? (uint16_t)0 :
                      (uint16_t)(connection - netplay->connections + 1));
-               networking_driver_st.core_netpacket_interface->packet_received
+               networking_driver_st.core_netpacket_interface->receive
                   (netplay->zbuffer, cmd_size, client_id);
             }
             break;
@@ -7662,9 +7662,9 @@ static bool netplay_poll(netplay_t *netplay, bool block_libretro_input)
       if (netplay->self_mode == NETPLAY_CONNECTION_NONE)
          return true;
       netplay_poll_net_input(netplay);
-      if (networking_driver_st.core_netpacket_interface->net_poll
+      if (networking_driver_st.core_netpacket_interface->poll
             && netplay->self_mode == NETPLAY_CONNECTION_PLAYING)
-         networking_driver_st.core_netpacket_interface->net_poll();
+         networking_driver_st.core_netpacket_interface->poll();
       return true;
    }
 
@@ -8531,8 +8531,8 @@ void deinit_netplay(void)
 #endif
 
       if (net_st->core_netpacket_interface
-            && net_st->core_netpacket_interface->net_shutdown)
-         net_st->core_netpacket_interface->net_shutdown();
+            && net_st->core_netpacket_interface->stop)
+         net_st->core_netpacket_interface->stop();
    }
 
    free(net_st->client_info);
@@ -8687,8 +8687,8 @@ bool init_netplay(const char *server, unsigned port, const char *mitm_session)
 
    /* Tell a core that uses the netpacket interface that the host is ready */
    if (netplay->is_server && net_st->core_netpacket_interface &&
-         net_st->core_netpacket_interface->net_ready)
-      net_st->core_netpacket_interface->net_ready(0, netplay_netpacket_send);
+         net_st->core_netpacket_interface->start)
+      net_st->core_netpacket_interface->start(0, netplay_netpacket_send);
 
    return true;
 
