@@ -7198,6 +7198,12 @@ static void netplay_frontend_paused(netplay_t *netplay, bool paused)
    size_t i;
    uint32_t paused_ct    = 0;
 
+   /* When a core uses the netpacket interface netplay doesn't control pause.
+    * We need this because even if RARCH_NETPLAY_CTL_ALLOW_PAUSE returns false
+    * on some platforms the frontend may try to force netplay to pause. */
+   if (networking_driver_st.core_netpacket_interface)
+      return;
+
    netplay->local_paused = paused;
 
    /* Communicating this is a bit odd: If exactly one other connection is
