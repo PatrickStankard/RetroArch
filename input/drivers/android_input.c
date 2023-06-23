@@ -697,7 +697,7 @@ static INLINE void android_input_poll_event_type_motion(
             action == AMOTION_EVENT_ACTION_UP
          || action == AMOTION_EVENT_ACTION_CANCEL
          || action == AMOTION_EVENT_ACTION_POINTER_UP)
-         || (source == (AINPUT_SOURCE_MOUSE | AINPUT_SOURCE_MOUSE_RELATIVE | AINPUT_SOURCE_TRACKBALL) &&
+         || ((source & (AINPUT_SOURCE_MOUSE | AINPUT_SOURCE_MOUSE_RELATIVE | AINPUT_SOURCE_TRACKBALL)) &&
              action != AMOTION_EVENT_ACTION_DOWN);
 
    /* If source is mouse then calculate button state
@@ -1481,7 +1481,7 @@ static void android_input_poll_input_default(android_input_t *android)
                   engine_handle_touchpad(android_app, event, port);
                /* Only handle events from a touchscreen or mouse */
                if ((source & (AINPUT_SOURCE_TOUCHSCREEN
-                           | AINPUT_SOURCE_STYLUS | AINPUT_SOURCE_MOUSE | AINPUT_SOURCE_MOUSE_RELATIVE | AINPUT_SOURCE_TRACKBALL)))
+                           | AINPUT_SOURCE_STYLUS | AINPUT_SOURCE_MOUSE | AINPUT_SOURCE_MOUSE_RELATIVE)))
                   android_input_poll_event_type_motion(android, event,
                         port, source);
                else
