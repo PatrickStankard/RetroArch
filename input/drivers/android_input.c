@@ -1480,7 +1480,7 @@ static void android_input_poll_input_default(android_input_t *android)
                if ((source & AINPUT_SOURCE_TOUCHPAD))
                   engine_handle_touchpad(android_app, event, port);
                /* Only handle events from a touchscreen or mouse */
-               if ((source & (AINPUT_SOURCE_TOUCHSCREEN
+               else if ((source & (AINPUT_SOURCE_TOUCHSCREEN
                            | AINPUT_SOURCE_STYLUS | AINPUT_SOURCE_MOUSE | AINPUT_SOURCE_MOUSE_RELATIVE)))
                   android_input_poll_event_type_motion(android, event,
                         port, source);
