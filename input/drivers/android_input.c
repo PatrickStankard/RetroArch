@@ -1485,10 +1485,10 @@ int action        = getaction  & AMOTION_EVENT_ACTION_MASK;
 size_t motion_ptr = getaction >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
 RARCH_WARN("[AINPUT_EVENT_TYPE_MOTION]: source: %x - action: %d - motion_ptr: %d Abs: %d,%d - Rel: %d,%d: \n",
    (int)source, (int)action, (int)motion_ptr,
-   AMotionEvent_getX(event, motion_ptr),
-   AMotionEvent_getY(event, motion_ptr),
-   (AMotionEvent_getAxisValue ? AMotionEvent_getAxisValue(event,AMOTION_EVENT_AXIS_RELATIVE_X, motion_ptr) : -1),
-   (AMotionEvent_getAxisValue ? AMotionEvent_getAxisValue(event,AMOTION_EVENT_AXIS_RELATIVE_Y, motion_ptr) : -1));
+   (int)AMotionEvent_getX(event, motion_ptr),
+   (int)AMotionEvent_getY(event, motion_ptr),
+   (int)(AMotionEvent_getAxisValue ? AMotionEvent_getAxisValue(event,AMOTION_EVENT_AXIS_RELATIVE_X, motion_ptr) : -1),
+   (int)(AMotionEvent_getAxisValue ? AMotionEvent_getAxisValue(event,AMOTION_EVENT_AXIS_RELATIVE_Y, motion_ptr) : -1));
 }
 
 
@@ -1496,8 +1496,8 @@ RARCH_WARN("[AINPUT_EVENT_TYPE_MOTION]: source: %x - action: %d - motion_ptr: %d
                   engine_handle_touchpad(android_app, event, port);
                /* Only handle events from a touchscreen or mouse */
                else if ((source & (AINPUT_SOURCE_TOUCHSCREEN
-                           | AINPUT_SOURCE_STYLUS | AINPUT_SOURCE_MOUSE)))
-//                           | AINPUT_SOURCE_STYLUS | AINPUT_SOURCE_MOUSE | AINPUT_SOURCE_MOUSE_RELATIVE)))
+//                           | AINPUT_SOURCE_STYLUS | AINPUT_SOURCE_MOUSE)))
+                           | AINPUT_SOURCE_STYLUS | AINPUT_SOURCE_MOUSE | AINPUT_SOURCE_MOUSE_RELATIVE)))
                   android_input_poll_event_type_motion(android, event,
                         port, source);
                else
