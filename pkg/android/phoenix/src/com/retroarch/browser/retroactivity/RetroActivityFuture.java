@@ -123,5 +123,6 @@ public final class RetroActivityFuture extends RetroActivityCamera {
         InputManager inputManager = (InputManager)getSystemService(Context.INPUT_SERVICE);
         mInputManager_setCursorVisibility.invoke(inputManager, state);
       } catch (Exception e) { }
+    }
   }
 }
