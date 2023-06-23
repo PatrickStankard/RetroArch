@@ -1477,6 +1477,21 @@ static void android_input_poll_input_default(android_input_t *android)
          switch (type_event)
          {
             case AINPUT_EVENT_TYPE_MOTION:
+
+
+{
+int getaction     = AMotionEvent_getAction(event);
+int action        = getaction  & AMOTION_EVENT_ACTION_MASK;
+size_t motion_ptr = getaction >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
+RARCH_WARN("[AINPUT_EVENT_TYPE_MOTION]: source: %x - action: %d - motion_ptr: %d Abs: %d,%d - Rel: %d,%d: \n",
+   (int)source, (int)action, (int)motion_ptr,
+   AMotionEvent_getX(event, motion_ptr),
+   AMotionEvent_getY(event, motion_ptr),
+   (AMotionEvent_getAxisValue ? AMotionEvent_getAxisValue(event,AMOTION_EVENT_AXIS_RELATIVE_X, motion_ptr) : -1),
+   (AMotionEvent_getAxisValue ? AMotionEvent_getAxisValue(event,AMOTION_EVENT_AXIS_RELATIVE_Y, motion_ptr) : -1));
+}
+
+
                if ((source & AINPUT_SOURCE_TOUCHPAD))
                   engine_handle_touchpad(android_app, event, port);
                /* Only handle events from a touchscreen or mouse */
