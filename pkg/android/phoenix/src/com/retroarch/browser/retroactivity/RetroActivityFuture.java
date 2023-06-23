@@ -19,41 +19,6 @@ public final class RetroActivityFuture extends RetroActivityCamera {
   // If set to true then Retroarch will completely exit when it loses focus
   private boolean quitfocus = false;
 
-  private void captureMousePointer() {
-    // Attempt requestPointerCapture for SDK >= OREO
-    if (Build.VERSION.SDK_INT >= 26) {
-      View thisView = getWindow().getDecorView();
-      thisView.requestPointerCapture();
-    }
-  }
-
-  @Override
-  public void onWindowFocusChanged(boolean hasFocus) {
-    super.onWindowFocusChanged(hasFocus);
-    if (hasFocus) captureMousePointer();
-  }
-
-  @Override
-  // Note: This currently isn't doing anything, will need to properly support mouse in the UI at some point
-  public void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-
-    if (Build.VERSION.SDK_INT >= 26) {
-      View thisView = getWindow().getDecorView();
-      thisView.setOnCapturedPointerListener(new View.OnCapturedPointerListener() {
-        @Override
-        public boolean onCapturedPointer(View view, MotionEvent motionEvent) {
-	  // TODO: Should we be handling this somehow for relative mouse input?
-          //float x = motionEvent.getX();
-          //float y = motionEvent.getY();
-
-	  // Let android know we didn't handle it
-          return false;
-        }
-      });
-    }
-  }
-
   @Override
   public void onResume() {
     super.onResume();
@@ -140,5 +105,23 @@ public final class RetroActivityFuture extends RetroActivityCamera {
 
     // If QUITFOCUS parameter was set then completely exit Retroarch when focus is lost
     if (quitfocus) System.exit(0);
+  }
+
+  public void inputGrabMouse(boolean state) {
+    // Attempt requestPointerCapture for SDK >= OREO
+    if (Build.VERSION.SDK_INT >= 26) {
+      try {
+        View view = getWindow().getDecorView();
+        if (state) view.requestPointerCapture();
+        else view.releasePointerCapture();
+      } catch (Exception e) { }
+    }
+    // Check for NVIDIA extensions and minimum SDK version
+    if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
+      try {
+        Method mInputManager_setCursorVisibility = InputManager.class.getMethod("setCursorVisibility", boolean.class);
+        InputManager inputManager = (InputManager)getSystemService(Context.INPUT_SERVICE);
+        mInputManager_setCursorVisibility.invoke(inputManager, state);
+      } catch (Exception e) { }
   }
 }

@@ -1961,6 +1961,18 @@ static float android_input_get_sensor_input(void *data,
    return 0.0f;
 }
 
+static void android_input_grab_mouse(void *data, bool state)
+{
+   JNIEnv *env = jni_thread_getenv();
+
+   if (!env || !g_android)
+      return;
+
+   if (g_android->inputGrabMouse)
+      CALL_VOID_METHOD_PARAM(env, g_android->activity->clazz,
+            g_android->inputGrabMouse, state);
+}
+
 static void android_input_keypress_vibrate()
 {
    static const int keyboard_press = 3;
@@ -1982,8 +1994,7 @@ input_driver_t input_android = {
    android_input_get_sensor_input,
    android_input_get_capabilities,
    "android",
-
-   NULL,                            /* grab_mouse */
+   android_input_grab_mouse,
    NULL,
    android_input_keypress_vibrate
 };
