@@ -657,7 +657,6 @@ static INLINE void android_mouse_calculate_deltas(android_input_t *android,
 
    /* This axis is only available on Android Nougat and on 
     * Android devices with NVIDIA extensions */
-
    if (p_AMotionEvent_getAxisValue)
    {
       x = AMotionEvent_getAxisValue(event,AMOTION_EVENT_AXIS_RELATIVE_X,
@@ -697,12 +696,14 @@ static INLINE void android_input_poll_event_type_motion(
             action == AMOTION_EVENT_ACTION_UP
          || action == AMOTION_EVENT_ACTION_CANCEL
          || action == AMOTION_EVENT_ACTION_POINTER_UP)
-         || ((source & (AINPUT_SOURCE_MOUSE | AINPUT_SOURCE_MOUSE_RELATIVE | AINPUT_SOURCE_TRACKBALL)) &&
+         || (source == AINPUT_SOURCE_MOUSE &&
+//         || ((source & (AINPUT_SOURCE_MOUSE | AINPUT_SOURCE_MOUSE_RELATIVE | AINPUT_SOURCE_TRACKBALL)) &&
              action != AMOTION_EVENT_ACTION_DOWN);
 
    /* If source is mouse then calculate button state
     * and mouse deltas and don't process as touchscreen event */
-   if (source & (AINPUT_SOURCE_MOUSE | AINPUT_SOURCE_MOUSE_RELATIVE | AINPUT_SOURCE_TRACKBALL))
+//   if (source & (AINPUT_SOURCE_MOUSE | AINPUT_SOURCE_MOUSE_RELATIVE | AINPUT_SOURCE_TRACKBALL))
+   if (source == AINPUT_SOURCE_MOUSE)
    {
       /* getButtonState requires API level 14 */
       if (p_AMotionEvent_getButtonState)
@@ -1476,12 +1477,12 @@ static void android_input_poll_input_default(android_input_t *android)
          switch (type_event)
          {
             case AINPUT_EVENT_TYPE_MOTION:
-	       /* This breaks using touchpad as mouse, but probably should be an option to support this method of input */
                if ((source & AINPUT_SOURCE_TOUCHPAD))
                   engine_handle_touchpad(android_app, event, port);
                /* Only handle events from a touchscreen or mouse */
                else if ((source & (AINPUT_SOURCE_TOUCHSCREEN
-                           | AINPUT_SOURCE_STYLUS | AINPUT_SOURCE_MOUSE | AINPUT_SOURCE_MOUSE_RELATIVE)))
+                           | AINPUT_SOURCE_STYLUS | AINPUT_SOURCE_MOUSE)))
+//                           | AINPUT_SOURCE_STYLUS | AINPUT_SOURCE_MOUSE | AINPUT_SOURCE_MOUSE_RELATIVE)))
                   android_input_poll_event_type_motion(android, event,
                         port, source);
                else
