@@ -790,7 +790,7 @@ static INLINE void android_input_poll_event_type_motion(
       if ((       action == AMOTION_EVENT_ACTION_MOVE 
                || action == AMOTION_EVENT_ACTION_HOVER_MOVE) 
             && ENABLE_TOUCH_SCREEN_MOUSE)
-         android_mouse_calculate_deltas(android,event,motion_ptr);
+         android_mouse_calculate_deltas(android,event,motion_ptr,source);
 
       for (motion_ptr = 0; motion_ptr < pointer_max; motion_ptr++)
       {
@@ -1493,7 +1493,7 @@ RARCH_WARN("[AINPUT_EVENT_TYPE_MOTION]: source: %x - action: %d - motion_ptr: %d
    (int)AMotionEvent_getX(event, motion_ptr),
    (int)AMotionEvent_getY(event, motion_ptr),
    (int)(AMotionEvent_getAxisValue ? (int)AMotionEvent_getAxisValue(event,AMOTION_EVENT_AXIS_RELATIVE_X, motion_ptr) : -1),
-   (int)(AMotionEvent_getAxisValue ? (int)AMotionEvent_getAxisValue(event,AMOTION_EVENT_AXIS_RELATIVE_Y, motion_ptr) : -1)
+   (int)(AMotionEvent_getAxisValue ? (int)AMotionEvent_getAxisValue(event,AMOTION_EVENT_AXIS_RELATIVE_Y, motion_ptr) : -1),
    (int)(p_AMotionEvent_getButtonState ? (int)AMotionEvent_getButtonState(event) : -1),
    (int)(AINPUT_SOURCE_MOUSE | AINPUT_SOURCE_MOUSE_RELATIVE)
    );
