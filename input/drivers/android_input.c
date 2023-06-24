@@ -663,6 +663,11 @@ static INLINE void android_mouse_calculate_deltas(android_input_t *android,
    {
       x = AMotionEvent_getX(event, motion_ptr);
       y = AMotionEvent_getY(event, motion_ptr);
+
+RARCH_WARN("[AINPUT_EVENT_TYPE_MOTION] android_mouse_calculate_deltas: source: %x - IS MOUSE REL - scale: %f,%f - xy: %f,%f\n",
+   source, ((source & AINPUT_SOURCE_MOUSE_RELATIVE) == AINPUT_SOURCE_MOUSE_RELATIVE), x_scale, y_scale, x, y);
+
+
    }
    else
    {
@@ -674,6 +679,10 @@ static INLINE void android_mouse_calculate_deltas(android_input_t *android,
                motion_ptr);
          y = AMotionEvent_getAxisValue(event,AMOTION_EVENT_AXIS_RELATIVE_Y,
                motion_ptr);
+
+RARCH_WARN("[AINPUT_EVENT_TYPE_MOTION] android_mouse_calculate_deltas: source: %x - HAS GET AXIS - scale: %f,%f - axis: %f,%f\n",
+   source, ((source & AINPUT_SOURCE_MOUSE_RELATIVE) == AINPUT_SOURCE_MOUSE_RELATIVE), x_scale, y_scale, x, y);
+
       }
 
       /* If AXIS_RELATIVE had 0 values it might be because we're not 
@@ -690,6 +699,10 @@ static INLINE void android_mouse_calculate_deltas(android_input_t *android,
          y = (AMotionEvent_getY(event, motion_ptr) - android->mouse_y_prev);
          android->mouse_x_prev = AMotionEvent_getX(event, motion_ptr);
          android->mouse_y_prev = AMotionEvent_getY(event, motion_ptr);
+
+RARCH_WARN("[AINPUT_EVENT_TYPE_MOTION] android_mouse_calculate_deltas: source: %x - CALC FROM PREV - scale: %f,%f - xy: %f,%f\n",
+   source, ((source & AINPUT_SOURCE_MOUSE_RELATIVE) == AINPUT_SOURCE_MOUSE_RELATIVE), x_scale, y_scale, x, y);
+
       }
    }
    android->mouse_x_delta = ceil(x) * x_scale;
@@ -707,6 +720,10 @@ static INLINE void android_input_poll_event_type_motion(
             action == AMOTION_EVENT_ACTION_UP
          || action == AMOTION_EVENT_ACTION_CANCEL
          || action == AMOTION_EVENT_ACTION_POINTER_UP);
+
+RARCH_WARN("[AINPUT_EVENT_TYPE_MOTION] android_input_poll_event_type_motion: source: %x - ismouse: %d\n",
+   source, (    (source & AINPUT_SOURCE_MOUSE) == AINPUT_SOURCE_MOUSE
+        || (source & AINPUT_SOURCE_MOUSE_RELATIVE) == AINPUT_SOURCE_MOUSE_RELATIVE));
 
    /* If source is mouse then calculate button state
     * and mouse deltas and don't process as touchscreen event.
