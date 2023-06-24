@@ -636,7 +636,7 @@ static int android_check_quick_tap(android_input_t *android)
 }
 
 static INLINE void android_mouse_calculate_deltas(android_input_t *android,
-      AInputEvent *event,size_t motion_ptr)
+      AInputEvent *event,size_t motion_ptr, int source)
 {
    /* Adjust mouse speed based on ratio
     * between core resolution and system resolution */
@@ -655,32 +655,41 @@ static INLINE void android_mouse_calculate_deltas(android_input_t *android,
       y_scale = 2 * (float)geom->base_height / (float)custom_vp->height;
    }
 
-   /* This axis is only available on Android Nougat and on 
-    * Android devices with NVIDIA extensions */
-   if (p_AMotionEvent_getAxisValue)
+   /* AINPUT_SOURCE_MOUSE_RELATIVE is available on Oreo (SDK 26) and newer,
+    * it passes the relative coordinates in the regular X and Y parts. */
+   if (source & AINPUT_SOURCE_MOUSE_RELATIVE)
    {
-      x = AMotionEvent_getAxisValue(event,AMOTION_EVENT_AXIS_RELATIVE_X,
-            motion_ptr);
-      y = AMotionEvent_getAxisValue(event,AMOTION_EVENT_AXIS_RELATIVE_Y,
-            motion_ptr);
+      x = AMotionEvent_getX(event, motion_ptr);
+      y = AMotionEvent_getY(event, motion_ptr);
    }
-
-   /* If AXIS_RELATIVE had 0 values it might be because we're not 
-    * running Android Nougat or on a device
-    * with NVIDIA extension, so re-calculate deltas based on 
-    * AXIS_X and AXIS_Y. This has limitations
-    * compared to AXIS_RELATIVE because once the Android mouse cursor 
-    * hits the edge of the screen it is
-    * not possible to move the in-game mouse any further in that direction.
-    */
-   if (!x && !y)
+   else
    {
-      x = (AMotionEvent_getX(event, motion_ptr) - android->mouse_x_prev);
-      y = (AMotionEvent_getY(event, motion_ptr) - android->mouse_y_prev);
-      android->mouse_x_prev = AMotionEvent_getX(event, motion_ptr);
-      android->mouse_y_prev = AMotionEvent_getY(event, motion_ptr);
-   }
+      /* This axis is only available on Android Nougat and on 
+      * Android devices with NVIDIA extensions */
+      if (p_AMotionEvent_getAxisValue)
+      {
+         x = AMotionEvent_getAxisValue(event,AMOTION_EVENT_AXIS_RELATIVE_X,
+               motion_ptr);
+         y = AMotionEvent_getAxisValue(event,AMOTION_EVENT_AXIS_RELATIVE_Y,
+               motion_ptr);
+      }
 
+      /* If AXIS_RELATIVE had 0 values it might be because we're not 
+      * running Android Nougat or on a device
+      * with NVIDIA extension, so re-calculate deltas based on 
+      * AXIS_X and AXIS_Y. This has limitations
+      * compared to AXIS_RELATIVE because once the Android mouse cursor 
+      * hits the edge of the screen it is
+      * not possible to move the in-game mouse any further in that direction.
+      */
+      if (!x && !y)
+      {
+         x = (AMotionEvent_getX(event, motion_ptr) - android->mouse_x_prev);
+         y = (AMotionEvent_getY(event, motion_ptr) - android->mouse_y_prev);
+         android->mouse_x_prev = AMotionEvent_getX(event, motion_ptr);
+         android->mouse_y_prev = AMotionEvent_getY(event, motion_ptr);
+      }
+   }
    android->mouse_x_delta = ceil(x) * x_scale;
    android->mouse_y_delta = ceil(y) * y_scale;
 }
@@ -695,15 +704,11 @@ static INLINE void android_input_poll_event_type_motion(
    bool keyup        = (
             action == AMOTION_EVENT_ACTION_UP
          || action == AMOTION_EVENT_ACTION_CANCEL
-         || action == AMOTION_EVENT_ACTION_POINTER_UP)
-         || (source == AINPUT_SOURCE_MOUSE &&
-//         || ((source & (AINPUT_SOURCE_MOUSE | AINPUT_SOURCE_MOUSE_RELATIVE | AINPUT_SOURCE_TRACKBALL)) &&
-             action != AMOTION_EVENT_ACTION_DOWN);
+         || action == AMOTION_EVENT_ACTION_POINTER_UP);
 
    /* If source is mouse then calculate button state
     * and mouse deltas and don't process as touchscreen event */
-//   if (source & (AINPUT_SOURCE_MOUSE | AINPUT_SOURCE_MOUSE_RELATIVE | AINPUT_SOURCE_TRACKBALL))
-   if (source == AINPUT_SOURCE_MOUSE)
+   if (source & (AINPUT_SOURCE_MOUSE | AINPUT_SOURCE_MOUSE_RELATIVE))
    {
       /* getButtonState requires API level 14 */
       if (p_AMotionEvent_getButtonState)
@@ -732,7 +737,7 @@ static INLINE void android_input_poll_event_type_motion(
             android->mouse_l = 0;
       }
 
-      android_mouse_calculate_deltas(android,event,motion_ptr);
+      android_mouse_calculate_deltas(android,event,motion_ptr,source);
 
       return;
    }
@@ -1483,12 +1488,15 @@ static void android_input_poll_input_default(android_input_t *android)
 int getaction     = AMotionEvent_getAction(event);
 int action        = getaction  & AMOTION_EVENT_ACTION_MASK;
 size_t motion_ptr = getaction >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
-RARCH_WARN("[AINPUT_EVENT_TYPE_MOTION]: source: %x - action: %d - motion_ptr: %d Abs: %d,%d - Rel: %d,%d: \n",
+RARCH_WARN("[AINPUT_EVENT_TYPE_MOTION]: source: %x - action: %d - motion_ptr: %d - Abs: %d,%d - Rel: %d,%d - Btn: %x - MOUSESOURCE: %x\n",
    (int)source, (int)action, (int)motion_ptr,
    (int)AMotionEvent_getX(event, motion_ptr),
    (int)AMotionEvent_getY(event, motion_ptr),
-   (int)(AMotionEvent_getAxisValue ? AMotionEvent_getAxisValue(event,AMOTION_EVENT_AXIS_RELATIVE_X, motion_ptr) : -1),
-   (int)(AMotionEvent_getAxisValue ? AMotionEvent_getAxisValue(event,AMOTION_EVENT_AXIS_RELATIVE_Y, motion_ptr) : -1));
+   (int)(AMotionEvent_getAxisValue ? (int)AMotionEvent_getAxisValue(event,AMOTION_EVENT_AXIS_RELATIVE_X, motion_ptr) : -1),
+   (int)(AMotionEvent_getAxisValue ? (int)AMotionEvent_getAxisValue(event,AMOTION_EVENT_AXIS_RELATIVE_Y, motion_ptr) : -1)
+   (int)(p_AMotionEvent_getButtonState ? (int)AMotionEvent_getButtonState(event) : -1),
+   (int)(AINPUT_SOURCE_MOUSE | AINPUT_SOURCE_MOUSE_RELATIVE)
+   );
 }
 
 
@@ -1496,7 +1504,6 @@ RARCH_WARN("[AINPUT_EVENT_TYPE_MOTION]: source: %x - action: %d - motion_ptr: %d
                   engine_handle_touchpad(android_app, event, port);
                /* Only handle events from a touchscreen or mouse */
                else if ((source & (AINPUT_SOURCE_TOUCHSCREEN
-//                           | AINPUT_SOURCE_STYLUS | AINPUT_SOURCE_MOUSE)))
                            | AINPUT_SOURCE_STYLUS | AINPUT_SOURCE_MOUSE | AINPUT_SOURCE_MOUSE_RELATIVE)))
                   android_input_poll_event_type_motion(android, event,
                         port, source);
