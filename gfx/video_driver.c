@@ -3207,6 +3207,9 @@ bool video_driver_init_internal(bool *video_is_threaded, bool verbosity_enabled)
    /* Ensure that we preserve the 'grab mouse' state if it was enabled prior
     * to driver (re-)initialisation. Also on platforms without windowed video
     * always grab the mouse (i.e. Android) */
+video_driver_init_internal
+video_driver_init_internal
+RARCH_WARN("[AINPUT_EVENT_TYPE_MOTION]: in video_driver_init_internal - video_driver_has_windowed: %d\n", video_driver_has_windowed());
    if ((input_st->flags & INP_FLAG_GRAB_MOUSE_STATE)
          || !video_driver_has_windowed())
    {

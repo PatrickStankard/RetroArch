@@ -3925,7 +3925,7 @@ bool command_event(enum event_command cmd, void *data)
             /* If we go fullscreen we drop all drivers and
              * reinitialize to be safe. */
             command_event(CMD_EVENT_REINIT, NULL);
-            if (video_fullscreen)
+            if (video_fullscreen || !video_driver_has_windowed())
             {
                if (     video_st->poke
                      && video_st->poke->show_mouse)
