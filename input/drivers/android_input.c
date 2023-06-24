@@ -61,7 +61,8 @@ enum {
     AMOTION_EVENT_BUTTON_FORWARD = 1 << 4,
     AMOTION_EVENT_AXIS_VSCROLL = 9,
     AMOTION_EVENT_ACTION_HOVER_MOVE = 7,
-    AINPUT_SOURCE_STYLUS = 0x00004000
+    AINPUT_SOURCE_STYLUS = 0x00004000,
+    AINPUT_SOURCE_MOUSE_RELATIVE = 0x00020000
 };
 #endif
 
@@ -656,8 +657,9 @@ static INLINE void android_mouse_calculate_deltas(android_input_t *android,
    }
 
    /* AINPUT_SOURCE_MOUSE_RELATIVE is available on Oreo (SDK 26) and newer,
-    * it passes the relative coordinates in the regular X and Y parts. */
-   if (source & AINPUT_SOURCE_MOUSE_RELATIVE)
+    * it passes the relative coordinates in the regular X and Y parts.
+    * NOTE: AINPUT_SOURCE_* defines have multiple bits set so do full check */
+   if ((source & AINPUT_SOURCE_MOUSE_RELATIVE) == AINPUT_SOURCE_MOUSE_RELATIVE)
    {
       x = AMotionEvent_getX(event, motion_ptr);
       y = AMotionEvent_getY(event, motion_ptr);
@@ -707,8 +709,10 @@ static INLINE void android_input_poll_event_type_motion(
          || action == AMOTION_EVENT_ACTION_POINTER_UP);
 
    /* If source is mouse then calculate button state
-    * and mouse deltas and don't process as touchscreen event */
-   if (source & (AINPUT_SOURCE_MOUSE | AINPUT_SOURCE_MOUSE_RELATIVE))
+    * and mouse deltas and don't process as touchscreen event.
+    * NOTE: AINPUT_SOURCE_* defines have multiple bits set so do full check */
+   if (    (source & AINPUT_SOURCE_MOUSE) == AINPUT_SOURCE_MOUSE
+        || (source & AINPUT_SOURCE_MOUSE_RELATIVE) == AINPUT_SOURCE_MOUSE_RELATIVE)
    {
       /* getButtonState requires API level 14 */
       if (p_AMotionEvent_getButtonState)
@@ -892,7 +896,7 @@ static int android_input_get_id_port(android_input_t *android, int id,
    unsigned i;
    int ret = -1;
    if (source & (AINPUT_SOURCE_TOUCHSCREEN | AINPUT_SOURCE_MOUSE |
-            AINPUT_SOURCE_TOUCHPAD))
+            AINPUT_SOURCE_TOUCHPAD | AINPUT_SOURCE_MOUSE_RELATIVE))
          ret = 0; /* touch overlay is always user 1 */
 
    for (i = 0; i < android->pads_connected; i++)
