@@ -584,11 +584,11 @@ void App::OnAcceleratorKey(CoreDispatcher^ sender, AcceleratorKeyEventArgs^ args
    CoreWindow^ window = CoreWindow::GetForCurrentThread();
    RARCH_LOG("[App::OnAcceleratorKey]: VirtualKey: %u - KeyCode: %u - State: %x - WasKeyDown: %d - IsKeyReleased: %d - RepeatCount: %d - Shfit:%x/%x/%x - Ctrl:%x/%x/%x - Alt:%x/%x/%x\n",
       (unsigned)args->VirtualKey, (unsigned)input_keymaps_translate_keysym_to_rk((unsigned)args->VirtualKey),
-      (unsigned)sender->GetKeyState(args->VirtualKey)
+      (unsigned)window->GetKeyState(args->VirtualKey)
       (int)args->KeyStatus.WasKeyDown, (int)args->KeyStatus.IsKeyReleased, (int)args->KeyStatus.RepeatCount,
-      (unsigned)sender->GetKeyState(VirtualKey::Shift), (unsigned)sender->GetKeyState(VirtualKey::LeftShift), (unsigned)sender->GetKeyState(VirtualKey::RightShift),
-      (unsigned)sender->GetKeyState(VirtualKey::Control), (unsigned)sender->GetKeyState(VirtualKey::LeftControl), (unsigned)sender->GetKeyState(VirtualKey::RightControl),
-      (unsigned)sender->GetKeyState(VirtualKey::Menu), (unsigned)sender->GetKeyState(VirtualKey::LeftMenu), (unsigned)sender->GetKeyState(VirtualKey::RightMenu)
+      (unsigned)window->GetKeyState(VirtualKey::Shift), (unsigned)window->GetKeyState(VirtualKey::LeftShift), (unsigned)window->GetKeyState(VirtualKey::RightShift),
+      (unsigned)window->GetKeyState(VirtualKey::Control), (unsigned)window->GetKeyState(VirtualKey::LeftControl), (unsigned)window->GetKeyState(VirtualKey::RightControl),
+      (unsigned)window->GetKeyState(VirtualKey::Menu), (unsigned)window->GetKeyState(VirtualKey::LeftMenu), (unsigned)window->GetKeyState(VirtualKey::RightMenu)
    );
 }
 
