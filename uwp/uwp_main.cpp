@@ -205,9 +205,7 @@ struct uwp_input_state_t
 
 struct uwp_input_state_t uwp_current_input, uwp_next_input;
 
-//enum { uwp_key_mod_state_count = 8 };
-//bool uwp_key_mod_states[uwp_key_mod_state_count];
-struct { VirtualKey base_key, real_key; bool state; } uwp_key_mod_keys[] =
+static struct { VirtualKey base_key, real_key; bool state; } uwp_key_mod_keys[] =
 {
    { VirtualKey::Shift,   VirtualKey::LeftShift    },
    { VirtualKey::Shift,   VirtualKey::RightShift   },
@@ -215,8 +213,6 @@ struct { VirtualKey base_key, real_key; bool state; } uwp_key_mod_keys[] =
    { VirtualKey::Control, VirtualKey::RightControl },
    { VirtualKey::Menu,    VirtualKey::LeftMenu     },
    { VirtualKey::Menu,    VirtualKey::RightMenu    },
-   { VirtualKey::Windows, VirtualKey::LeftWindows  },
-   { VirtualKey::Windows, VirtualKey::RightWindows },
 };
 
 /* Taken from DirectX UWP samples - on Xbox, everything is scaled 200%,
@@ -593,7 +589,7 @@ void App::OnWindowActivated(CoreWindow^ sender, WindowActivatedEventArgs^ args)
    m_windowFocused = args->WindowActivationState != CoreWindowActivationState::Deactivated;
 }
 
-bool App::GetKey(CoreWindow^ window, VirtualKey vkey, bool down, unsigned& keycode uint16_t& mod)
+bool App::GetKey(CoreWindow^ window, VirtualKey vkey, bool down, unsigned& keycode, uint16_t& mod)
 {
    /* Modifier keys (shift, ctrl, alt) are sent generic, we need to query if left or right */
    for (auto& it : uwp_key_mod_keys)
