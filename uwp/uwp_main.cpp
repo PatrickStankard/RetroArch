@@ -205,16 +205,6 @@ struct uwp_input_state_t
 
 struct uwp_input_state_t uwp_current_input, uwp_next_input;
 
-static struct { VirtualKey base_key, real_key; bool state; } uwp_key_mod_keys[] =
-{
-   { VirtualKey::Shift,   VirtualKey::LeftShift    },
-   { VirtualKey::Shift,   VirtualKey::RightShift   },
-   { VirtualKey::Control, VirtualKey::LeftControl  },
-   { VirtualKey::Control, VirtualKey::RightControl },
-   { VirtualKey::Menu,    VirtualKey::LeftMenu     },
-   { VirtualKey::Menu,    VirtualKey::RightMenu    },
-};
-
 /* Taken from DirectX UWP samples - on Xbox, everything is scaled 200%,
  * so getting the DPI calculation correct is crucial */
 static inline float ConvertDipsToPixels(float dips, float dpi)
@@ -589,22 +579,40 @@ void App::OnWindowActivated(CoreWindow^ sender, WindowActivatedEventArgs^ args)
    m_windowFocused = args->WindowActivationState != CoreWindowActivationState::Deactivated;
 }
 
-bool App::GetKey(CoreWindow^ window, VirtualKey vkey, bool down, unsigned& keycode, uint16_t& mod)
+bool App::GetKey(CoreWindow^ window, VirtualKey vkey, bool down, bool extended, unsigned& keycode, uint16_t& mod)
 {
-   /* Modifier keys (shift, ctrl, alt) are sent generic, we need to query if left or right */
-   for (auto& it : uwp_key_mod_keys)
+   /* Some keys we need to specify via the extended flag */
+   if (vkey == VirtualKey::Enter)
+      keycode = (extended ? RETROK_KP_ENTER : RETROK_RETURN);
+   else if (vkey == VirtualKey::Control)
+      keycode = (extended ? RETROK_RCTRL : RETROK_LCTRL);
+   else if (vkey == VirtualKey::Menu)
+      keycode = (extended ? RETROK_RALT : RETROK_LALT);
+   else if (vkey == VirtualKey::Shift)
    {
-      if (vkey != it.base_key) continue;
-      if (down == it.state) continue;
-      if (down != ((window->GetKeyState(it.real_key) & CoreVirtualKeyStates::Down) == CoreVirtualKeyStates::Down)) continue;
-      it.state = down;
-      vkey = it.real_key;
-      break;
+      /* Shift is just sent generic, we need to query for and remember left or right */
+      bool left_down = ((window->GetKeyState(VirtualKey::LeftShift) & CoreVirtualKeyStates::Down) == CoreVirtualKeyStates::Down);
+      bool right_down = ((window->GetKeyState(VirtualKey::RightShift) & CoreVirtualKeyStates::Down) == CoreVirtualKeyStates::Down);
+      static bool had_left_down, had_right_down;
+      if (down != had_left_down && down == left_down)
+      {
+         had_left_down = down;
+         keycode = RETROK_LSHIFT;
+      }
+      else if (down != had_right_down && down == right_down)
+      {
+         had_right_down = down;
+         keycode = RETROK_RSHIFT;
+      }
+      else
+         return false;
    }
-
-   keycode = input_keymaps_translate_keysym_to_rk((unsigned)vkey);
-   if (keycode == RETROK_UNKNOWN)
-      return false;
+   else
+   {
+      keycode = input_keymaps_translate_keysym_to_rk((unsigned)vkey);
+      if (keycode == RETROK_UNKNOWN)
+         return false;
+   }
 
    mod = 0;
    if ((window->GetKeyState(VirtualKey::Shift) & CoreVirtualKeyStates::Down) == CoreVirtualKeyStates::Down)
@@ -649,7 +657,7 @@ void App::OnAcceleratorKey(CoreDispatcher^ sender, AcceleratorKeyEventArgs^ args
             bool down = !args->KeyStatus.IsKeyReleased;
             unsigned keycode;
             uint16_t mod;
-            if (GetKey(window, args->VirtualKey, down, keycode, mod))
+            if (GetKey(window, args->VirtualKey, down, args->KeyStatus.IsExtendedKey, keycode, mod))
                input_keyboard_event(down, keycode, 0, mod, RETRO_DEVICE_KEYBOARD);
          }
          break;
@@ -658,10 +666,11 @@ void App::OnAcceleratorKey(CoreDispatcher^ sender, AcceleratorKeyEventArgs^ args
 
 void App::OnKey(CoreWindow^ sender, KeyEventArgs^ args)
 {
-   RARCH_LOG("[App::OnKey]: VirtualKey: %u - KeyCode: %u - State: %x - WasKeyDown: %d - IsKeyReleased: %d - RepeatCount: %d - Shfit:%x/%x/%x - Ctrl:%x/%x/%x - Alt:%x/%x/%x\n",
-      (unsigned)args->VirtualKey, (unsigned)input_keymaps_translate_keysym_to_rk((unsigned)args->VirtualKey),
+   RARCH_LOG("[App::OnKey]: VirtualKey: %u - Handled: %u - KeyCode: %u - State: %x - WasKeyDown: %d - IsKeyReleased: %d - RepeatCount: %d - IsExtendedKey: %d - ScanCode: %d - Shfit:%x/%x/%x - Ctrl:%x/%x/%x - Alt:%x/%x/%x\n",
+      (unsigned)args->VirtualKey, (unsigned)args->Handled,
+      (unsigned)input_keymaps_translate_keysym_to_rk((unsigned)args->VirtualKey),
       (unsigned)sender->GetKeyState(args->VirtualKey),
-      (int)args->KeyStatus.WasKeyDown, (int)args->KeyStatus.IsKeyReleased, (int)args->KeyStatus.RepeatCount,
+      (int)args->KeyStatus.WasKeyDown, (int)args->KeyStatus.IsKeyReleased, (int)args->KeyStatus.RepeatCount, (int)args->KeyStatus.IsExtendedKey, (int)args->KeyStatus.ScanCode,
       (unsigned)sender->GetKeyState(VirtualKey::Shift), (unsigned)sender->GetKeyState(VirtualKey::LeftShift), (unsigned)sender->GetKeyState(VirtualKey::RightShift),
       (unsigned)sender->GetKeyState(VirtualKey::Control), (unsigned)sender->GetKeyState(VirtualKey::LeftControl), (unsigned)sender->GetKeyState(VirtualKey::RightControl),
       (unsigned)sender->GetKeyState(VirtualKey::Menu), (unsigned)sender->GetKeyState(VirtualKey::LeftMenu), (unsigned)sender->GetKeyState(VirtualKey::RightMenu)
@@ -670,7 +679,7 @@ void App::OnKey(CoreWindow^ sender, KeyEventArgs^ args)
    bool down = !args->KeyStatus.IsKeyReleased;
    unsigned keycode;
    uint16_t mod;
-   if (GetKey(sender, args->VirtualKey, down, keycode, mod))
+   if (GetKey(sender, args->VirtualKey, down, args->KeyStatus.IsExtendedKey, keycode, mod))
       input_keyboard_event(down, keycode, 0, mod, RETRO_DEVICE_KEYBOARD);
 }
 
