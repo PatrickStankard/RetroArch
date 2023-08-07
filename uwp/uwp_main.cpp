@@ -596,7 +596,7 @@ bool App::GetKey(CoreWindow^ window, VirtualKey vkey, bool down, unsigned& keyco
    {
       if (vkey != it.base_key) continue;
       if (down == it.state) continue;
-      if (down != !(window->GetKeyState(it.real_key) & CoreVirtualKeyStates::Down)) continue;
+      if (down != ((window->GetKeyState(it.real_key) & CoreVirtualKeyStates::Down) == CoreVirtualKeyStates::Down)) continue;
       it.state = down;
       vkey = it.real_key;
       break;
@@ -649,7 +649,7 @@ void App::OnAcceleratorKey(CoreDispatcher^ sender, AcceleratorKeyEventArgs^ args
             bool down = !args->KeyStatus.IsKeyReleased;
             unsigned keycode;
             uint16_t mod;
-            if (GetKey(sender, args->VirtualKey, down, keycode, mod))
+            if (GetKey(window, args->VirtualKey, down, keycode, mod))
                input_keyboard_event(down, keycode, 0, mod, RETRO_DEVICE_KEYBOARD);
          }
          break;
