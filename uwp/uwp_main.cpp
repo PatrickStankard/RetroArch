@@ -578,6 +578,13 @@ void App::OnWindowActivated(CoreWindow^ sender, WindowActivatedEventArgs^ args)
 
 void App::OnKey(CoreWindow^ sender, KeyEventArgs^ args)
 {
+   RARCH_LOG("[App::OnKey]: VirtualKey: %u - KeyCode: %u - Shfit:%x/%x/%x - Ctrl:%x/%x/%x - Alt:%x/%x/%x\n",
+      (unsigned)args->VirtualKey, (unsigned)input_keymaps_translate_keysym_to_rk((unsigned)args->VirtualKey),
+      (unsigned)sender->GetKeyState(VirtualKey::Shift), (unsigned)sender->GetKeyState(VirtualKey::LeftShift), (unsigned)sender->GetKeyState(VirtualKey::RightShift),
+      (unsigned)sender->GetKeyState(VirtualKey::Control), (unsigned)sender->GetKeyState(VirtualKey::LeftControl), (unsigned)sender->GetKeyState(VirtualKey::RightControl),
+      (unsigned)sender->GetKeyState(VirtualKey::Menu), (unsigned)sender->GetKeyState(VirtualKey::LeftMenu), (unsigned)sender->GetKeyState(VirtualKey::RightMenu)
+   );
+
    unsigned keycode;
    uint16_t mod = 0;
    if ((sender->GetKeyState(VirtualKey::Shift) & CoreVirtualKeyStates::Locked) == CoreVirtualKeyStates::Locked)
