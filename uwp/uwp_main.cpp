@@ -581,11 +581,15 @@ void App::OnWindowActivated(CoreWindow^ sender, WindowActivatedEventArgs^ args)
 
 void App::OnAcceleratorKey(CoreDispatcher^ sender, AcceleratorKeyEventArgs^ args)
 {
+
+   char devid[MAX_PATH];
+   wcstombs(devid, DeviceId->Data(), sizeof(devid));
    CoreWindow^ window = CoreWindow::GetForCurrentThread();
-   RARCH_LOG("[App::OnAcceleratorKey]: VirtualKey: %u - KeyCode: %u - State: %x - WasKeyDown: %d - IsKeyReleased: %d - RepeatCount: %d - Shfit:%x/%x/%x - Ctrl:%x/%x/%x - Alt:%x/%x/%x\n",
-      (unsigned)args->VirtualKey, (unsigned)input_keymaps_translate_keysym_to_rk((unsigned)args->VirtualKey),
+   RARCH_LOG("[App::OnAcceleratorKey]: Device: %s - VirtualKey: %u - EventType: %u - Handled: %u - KeyCode: %u - State: %x - WasKeyDown: %d - IsKeyReleased: %d - RepeatCount: %d - IsExtendedKey: %d - ScanCode: %d - Shfit:%x/%x/%x - Ctrl:%x/%x/%x - Alt:%x/%x/%x\n",
+      devid, (unsigned)args->VirtualKey, (unsigned)args->EventType, (unsigned)args->Handled,
+      (unsigned)input_keymaps_translate_keysym_to_rk((unsigned)args->VirtualKey),
       (unsigned)window->GetKeyState(args->VirtualKey),
-      (int)args->KeyStatus.WasKeyDown, (int)args->KeyStatus.IsKeyReleased, (int)args->KeyStatus.RepeatCount,
+      (int)args->KeyStatus.WasKeyDown, (int)args->KeyStatus.IsKeyReleased, (int)args->KeyStatus.RepeatCount, (int)args->KeyStatus.IsExtendedKey, (int)args->KeyStatus.ScanCode,
       (unsigned)window->GetKeyState(VirtualKey::Shift), (unsigned)window->GetKeyState(VirtualKey::LeftShift), (unsigned)window->GetKeyState(VirtualKey::RightShift),
       (unsigned)window->GetKeyState(VirtualKey::Control), (unsigned)window->GetKeyState(VirtualKey::LeftControl), (unsigned)window->GetKeyState(VirtualKey::RightControl),
       (unsigned)window->GetKeyState(VirtualKey::Menu), (unsigned)window->GetKeyState(VirtualKey::LeftMenu), (unsigned)window->GetKeyState(VirtualKey::RightMenu)
