@@ -583,7 +583,7 @@ void App::OnAcceleratorKey(CoreDispatcher^ sender, AcceleratorKeyEventArgs^ args
 {
 
    char devid[MAX_PATH];
-   wcstombs(devid, DeviceId->Data(), sizeof(devid));
+   wcstombs(devid, args->DeviceId->Data(), sizeof(devid));
    CoreWindow^ window = CoreWindow::GetForCurrentThread();
    RARCH_LOG("[App::OnAcceleratorKey]: Device: %s - VirtualKey: %u - EventType: %u - Handled: %u - KeyCode: %u - State: %x - WasKeyDown: %d - IsKeyReleased: %d - RepeatCount: %d - IsExtendedKey: %d - ScanCode: %d - Shfit:%x/%x/%x - Ctrl:%x/%x/%x - Alt:%x/%x/%x\n",
       devid, (unsigned)args->VirtualKey, (unsigned)args->EventType, (unsigned)args->Handled,
