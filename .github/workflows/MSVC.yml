@@ -18,8 +18,6 @@ jobs:
         include:
           - configuration: Release
             platform: x64
-          - configuration: ReleaseANGLE
-            platform: x64
     steps:
       - uses: actions/checkout@v3
 

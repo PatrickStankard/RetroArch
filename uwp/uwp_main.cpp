@@ -324,6 +324,9 @@ void App::SetWindow(CoreWindow^ window)
    window->PointerWheelChanged +=
       ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &App::OnPointer);
 
+   window->Dispatcher->AcceleratorKeyActivated +=
+      ref new TypedEventHandler<CoreDispatcher^, AcceleratorKeyEventArgs^>(this, &App::OnAcceleratorKey);
+
    DisplayInformation^ currentDisplayInformation = DisplayInformation::GetForCurrentView();
 
    currentDisplayInformation->DpiChanged          +=
@@ -576,10 +579,25 @@ void App::OnWindowActivated(CoreWindow^ sender, WindowActivatedEventArgs^ args)
    m_windowFocused = args->WindowActivationState != CoreWindowActivationState::Deactivated;
 }
 
+void App::OnAcceleratorKey(CoreDispatcher^ sender, AcceleratorKeyEventArgs^ args)
+{
+   CoreWindow^ window = CoreWindow::GetForCurrentThread();
+   RARCH_LOG("[App::OnAcceleratorKey]: VirtualKey: %u - KeyCode: %u - State: %x - WasKeyDown: %d - IsKeyReleased: %d - RepeatCount: %d - Shfit:%x/%x/%x - Ctrl:%x/%x/%x - Alt:%x/%x/%x\n",
+      (unsigned)args->VirtualKey, (unsigned)input_keymaps_translate_keysym_to_rk((unsigned)args->VirtualKey),
+      (unsigned)sender->GetKeyState(args->VirtualKey)
+      (int)args->KeyStatus.WasKeyDown, (int)args->KeyStatus.IsKeyReleased, (int)args->KeyStatus.RepeatCount,
+      (unsigned)sender->GetKeyState(VirtualKey::Shift), (unsigned)sender->GetKeyState(VirtualKey::LeftShift), (unsigned)sender->GetKeyState(VirtualKey::RightShift),
+      (unsigned)sender->GetKeyState(VirtualKey::Control), (unsigned)sender->GetKeyState(VirtualKey::LeftControl), (unsigned)sender->GetKeyState(VirtualKey::RightControl),
+      (unsigned)sender->GetKeyState(VirtualKey::Menu), (unsigned)sender->GetKeyState(VirtualKey::LeftMenu), (unsigned)sender->GetKeyState(VirtualKey::RightMenu)
+   );
+}
+
 void App::OnKey(CoreWindow^ sender, KeyEventArgs^ args)
 {
-   RARCH_LOG("[App::OnKey]: VirtualKey: %u - KeyCode: %u - Shfit:%x/%x/%x - Ctrl:%x/%x/%x - Alt:%x/%x/%x\n",
+   RARCH_LOG("[App::OnKey]: VirtualKey: %u - KeyCode: %u - State: %x - WasKeyDown: %d - IsKeyReleased: %d - RepeatCount: %d - Shfit:%x/%x/%x - Ctrl:%x/%x/%x - Alt:%x/%x/%x\n",
       (unsigned)args->VirtualKey, (unsigned)input_keymaps_translate_keysym_to_rk((unsigned)args->VirtualKey),
+      (unsigned)sender->GetKeyState(args->VirtualKey)
+      (int)args->KeyStatus.WasKeyDown, (int)args->KeyStatus.IsKeyReleased, (int)args->KeyStatus.RepeatCount,
       (unsigned)sender->GetKeyState(VirtualKey::Shift), (unsigned)sender->GetKeyState(VirtualKey::LeftShift), (unsigned)sender->GetKeyState(VirtualKey::RightShift),
       (unsigned)sender->GetKeyState(VirtualKey::Control), (unsigned)sender->GetKeyState(VirtualKey::LeftControl), (unsigned)sender->GetKeyState(VirtualKey::RightControl),
       (unsigned)sender->GetKeyState(VirtualKey::Menu), (unsigned)sender->GetKeyState(VirtualKey::LeftMenu), (unsigned)sender->GetKeyState(VirtualKey::RightMenu)
