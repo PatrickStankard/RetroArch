@@ -75,6 +75,7 @@ namespace RetroArchUWP
       Platform::String^ m_launchOnExit;
       bool m_launchOnExitShutdown;
       void ParseProtocolArgs(Windows::ApplicationModel::Activation::IActivatedEventArgs^ args, int *argc, std::vector<char*> *argv, std::vector<std::string> *argvTmp);
+      bool GetKey(Windows::UI::Core::CoreWindow^ window, VirtualKey vkey, bool down, unsigned& keycode uint16_t& mod);
       static App^ m_instance;
    };
 }
