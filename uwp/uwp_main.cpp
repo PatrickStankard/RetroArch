@@ -305,12 +305,6 @@ void App::SetWindow(CoreWindow^ window)
    window->Closed              +=
       ref new TypedEventHandler<CoreWindow^, CoreWindowEventArgs^>(this, &App::OnWindowClosed);
 
-   window->KeyDown             +=
-      ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &App::OnKey);
-
-   window->KeyUp               +=
-      ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &App::OnKey);
-
    window->PointerPressed      +=
       ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &App::OnPointer);
 
@@ -587,8 +581,19 @@ void App::OnWindowActivated(CoreWindow^ sender, WindowActivatedEventArgs^ args)
    }
 }
 
-void App::SendKey(CoreWindow^ window, VirtualKey vkey, bool down, bool extended)
+void App::OnAcceleratorKey(CoreDispatcher^ sender, AcceleratorKeyEventArgs^ args)
 {
+   if (args->EventType != CoreAcceleratorKeyEventType::KeyDown && args->EventType != CoreAcceleratorKeyEventType::KeyUp &&
+       args->EventType != CoreAcceleratorKeyEventType::SystemKeyDown && args->EventType == CoreAcceleratorKeyEventType::SystemKeyUp)
+      return;
+
+   /* Unlike CoreWindow::KeyDown/KeyUp events, this callback gets called for all keys including
+    * F10, Alt and any keys pressed in addition to while Alt is being held down. */
+   bool down = !args->KeyStatus.IsKeyReleased;
+   bool extended = args->KeyStatus.IsExtendedKey;
+   VirtualKey vkey = args->VirtualKey;
+   CoreWindow^ window = CoreWindow::GetForCurrentThread();
+
    /* Some keys we need to specify via the extended flag */
    unsigned keycode = RETROK_UNKNOWN;
    if (vkey == VirtualKey::Enter)
@@ -636,26 +641,6 @@ void App::SendKey(CoreWindow^ window, VirtualKey vkey, bool down, bool extended)
       mod |= RETROKMOD_META;
 
    input_keyboard_event(down, keycode, 0, mod, RETRO_DEVICE_KEYBOARD);
-}
-
-void App::OnKey(CoreWindow^ sender, KeyEventArgs^ args)
-{
-   /* This callback normally isn't called for Alt and F10 keys, but if a future platform were to call it, ignore them here */
-   VirtualKey vkey = args->VirtualKey;
-   if (vkey != VirtualKey::Menu && vkey != VirtualKey::LeftMenu && vkey != VirtualKey::RightMenu && vkey != VirtualKey::F10)
-      SendKey(sender, vkey, !args->KeyStatus.IsKeyReleased, args->KeyStatus.IsExtendedKey);
-}
-
-void App::OnAcceleratorKey(CoreDispatcher^ sender, AcceleratorKeyEventArgs^ args)
-{
-   if (args->EventType == CoreAcceleratorKeyEventType::KeyDown || args->EventType == CoreAcceleratorKeyEventType::KeyUp ||
-         args->EventType == CoreAcceleratorKeyEventType::SystemKeyDown || args->EventType == CoreAcceleratorKeyEventType::SystemKeyUp)
-   {
-      /* This callback is called for all keys but we're only interested in the Alt and F10 keys which don't call OnKey */
-      VirtualKey vkey = args->VirtualKey;
-      if (vkey == VirtualKey::Menu || vkey == VirtualKey::LeftMenu || vkey == VirtualKey::RightMenu || vkey == VirtualKey::F10)
-         SendKey(CoreWindow::GetForCurrentThread(), vkey, !args->KeyStatus.IsKeyReleased, args->KeyStatus.IsExtendedKey);
-   }
 }
 
 void App::OnPointer(CoreWindow^ sender, PointerEventArgs^ args)
