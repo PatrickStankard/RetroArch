@@ -584,7 +584,7 @@ void App::OnWindowActivated(CoreWindow^ sender, WindowActivatedEventArgs^ args)
 void App::OnAcceleratorKey(CoreDispatcher^ sender, AcceleratorKeyEventArgs^ args)
 {
    if (args->EventType != CoreAcceleratorKeyEventType::KeyDown && args->EventType != CoreAcceleratorKeyEventType::KeyUp &&
-       args->EventType != CoreAcceleratorKeyEventType::SystemKeyDown && args->EventType == CoreAcceleratorKeyEventType::SystemKeyUp)
+       args->EventType != CoreAcceleratorKeyEventType::SystemKeyDown && args->EventType != CoreAcceleratorKeyEventType::SystemKeyUp)
       return;
 
    /* Unlike CoreWindow::KeyDown/KeyUp events, this callback gets called for all keys including
