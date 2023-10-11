@@ -4169,11 +4169,29 @@ static void netplay_hangup(netplay_t *netplay,
          uint32_t client_num = (uint32_t)
             (connection - netplay->connections + 1);
 
-         /* This special mode keeps the connection object
-            alive long enough to send the disconnection
-            message at the correct time */
-         connection->mode         = NETPLAY_CONNECTION_DELAYED_DISCONNECT;
-         connection->delay_frame  = netplay->read_frame_count[client_num];
+         if (netplay->modus != NETPLAY_MODUS_CORE_PACKET_INTERFACE)
+         {
+            /* This special mode keeps the connection object 
+               alive long enough to send the disconnection 
+               message at the correct time */
+            connection->mode         = NETPLAY_CONNECTION_DELAYED_DISCONNECT;
+            connection->delay_frame  = netplay->read_frame_count[client_num];
+         }
+         else
+         {
+            /* With netpacket interface we can send the mode change now */
+            struct mode_payload payload;
+            payload.frame   = htonl(netplay->self_frame_count);
+            payload.mode    = htonl(client_num);
+            payload.devices = 0;
+            memcpy(payload.share_modes, netplay->device_share_modes,
+                  sizeof(payload.share_modes));
+            memcpy(payload.nick, connection->nick, sizeof(payload.nick));
+            netplay_send_raw_cmd_all(netplay, connection,
+                  NETPLAY_CMD_MODE, &payload, sizeof(payload));
+
+            connection->mode         = NETPLAY_CONNECTION_NONE;
+         }
 
          /* Mark them as not playing anymore */
          netplay->connected_players &= ~(1L<<client_num);
@@ -4199,6 +4217,7 @@ static void netplay_delayed_state_change(netplay_t *netplay)
 {
    size_t i;
    struct mode_payload payload;
+   NETPLAY_ASSERT_MODUS(NETPLAY_MODUS_INPUT_FRAME_SYNC);
 
    payload.devices = 0;
    memcpy(payload.share_modes, netplay->device_share_modes,
@@ -4208,11 +4227,8 @@ static void netplay_delayed_state_change(netplay_t *netplay)
    {
       struct netplay_connection *connection = &netplay->connections[i];
 
-      /* When using the netpacket interface delay frames don't need to be
-         observed as frame data isn't queued up and frames aren't counted. */
-      if (   (    (!(connection->delay_frame))
-                ||  (connection->delay_frame > netplay->self_frame_count))
-             && netplay->modus != NETPLAY_MODUS_CORE_PACKET_INTERFACE)
+      if (    (!(connection->delay_frame))
+            ||  (connection->delay_frame > netplay->self_frame_count))
          continue;
 
       if (!(connection->flags & NETPLAY_CONN_FLAG_ACTIVE))
@@ -7779,10 +7795,6 @@ static bool netplay_poll(netplay_t *netplay, bool block_libretro_input)
 
       /* Read netplay input. */
       netplay_poll_net_input(netplay);
-
-      /* Handle any delayed state changes */
-      if (netplay->is_server)
-         netplay_delayed_state_change(netplay);
 
       if (networking_driver_st.core_netpacket_interface
             && networking_driver_st.core_netpacket_interface->poll
