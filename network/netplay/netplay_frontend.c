@@ -4208,8 +4208,11 @@ static void netplay_delayed_state_change(netplay_t *netplay)
    {
       struct netplay_connection *connection = &netplay->connections[i];
 
-      if (    (!(connection->delay_frame))
-            ||  (connection->delay_frame > netplay->self_frame_count))
+      /* When using the netpacket interface delay frames don't need to be
+         observed as frame data isn't queued up and frames aren't counted. */
+      if (   (    (!(connection->delay_frame))
+                ||  (connection->delay_frame > netplay->self_frame_count))
+             && netplay->modus != NETPLAY_MODUS_CORE_PACKET_INTERFACE)
          continue;
 
       if (!(connection->flags & NETPLAY_CONN_FLAG_ACTIVE))
