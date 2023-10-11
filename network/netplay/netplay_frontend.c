@@ -1268,15 +1268,19 @@ static bool netplay_handshake_sync(netplay_t *netplay,
    if (netplay->local_paused || netplay->remote_paused)
       client_num |= NETPLAY_CMD_SYNC_BIT_PAUSED;
 
-   mem_info.id = RETRO_MEMORY_SAVE_RAM;
+   /* send sram unless running with netpacket interface */
+   if (netplay->modus != NETPLAY_MODUS_CORE_PACKET_INTERFACE)
+   {
+      mem_info.id = RETRO_MEMORY_SAVE_RAM;
 #ifdef HAVE_THREADS
-   autosave_lock();
+      autosave_lock();
 #endif
-   core_get_memory(&mem_info);
-   sram_size = mem_info.size;
+      core_get_memory(&mem_info);
+      sram_size = mem_info.size;
 #ifdef HAVE_THREADS
-   autosave_unlock();
+      autosave_unlock();
 #endif
+   }
 
    /* Send basic sync info */
    cmd[0] = htonl(NETPLAY_CMD_SYNC);
@@ -1700,7 +1704,7 @@ static bool netplay_handshake_pre_sync(netplay_t *netplay,
    uint32_t cmd[2];
    uint32_t cmd_size;
    uint32_t new_frame_count, client_num;
-   uint32_t local_sram_size, remote_sram_size;
+   uint32_t local_sram_size = 0, remote_sram_size;
    size_t i, j;
    ssize_t recvd;
    char new_nick[NETPLAY_NICK_LEN];
@@ -1825,16 +1829,20 @@ static bool netplay_handshake_pre_sync(netplay_t *netplay,
          MESSAGE_QUEUE_ICON_DEFAULT, MESSAGE_QUEUE_CATEGORY_INFO);
    }
 
-   /* Now check the SRAM */
-   mem_info.id = RETRO_MEMORY_SAVE_RAM;
+   /* Now check the SRAM, but ignore it when using netpacket interface */
+   if (netplay->modus != NETPLAY_MODUS_CORE_PACKET_INTERFACE)
+   {
+      mem_info.id = RETRO_MEMORY_SAVE_RAM;
 #ifdef HAVE_THREADS
-   autosave_lock();
+      autosave_lock();
 #endif
-   core_get_memory(&mem_info);
-   local_sram_size  = (unsigned)mem_info.size;
+      core_get_memory(&mem_info);
+      local_sram_size = (unsigned)mem_info.size;
 #ifdef HAVE_THREADS
-   autosave_unlock();
+      autosave_unlock();
 #endif
+   }
+
    remote_sram_size = cmd_size - (2*sizeof(uint32_t)
       /* Controller devices */
       + MAX_INPUT_DEVICES*sizeof(uint32_t)
