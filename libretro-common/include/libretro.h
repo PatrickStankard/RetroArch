@@ -3093,7 +3093,7 @@ struct retro_disk_control_ext_callback
  *
  * The client_id RETRO_NETPACKET_BROADCAST sends the packet as a broadcast to
  * all connected players. This is supported from the host as well as clients.
-*  Otherwise, the argument indicates a single player to send the packet to.
+*  Otherwise, the argument indicates the player to send the packet to.
  *
  * A frontend must support sending reliable packets (RETRO_NETPACKET_RELIABLE).
  * Unreliable packets might not be supported by the frontend, but the flags can
@@ -3101,6 +3101,7 @@ struct retro_disk_control_ext_callback
  *
  * This function is not guaranteed to be thread-safe and must be called during
  * retro_run or any of the netpacket callbacks passed with this interface.
+ * To flush queued packets, pass with buf NULL and RETRO_NETPACKET_FLUSH_HINT.
  */
 typedef void (RETRO_CALLCONV *retro_netpacket_send_t)(int flags, const void* buf, size_t len, uint16_t client_id);
 
@@ -3163,6 +3164,10 @@ typedef void (RETRO_CALLCONV *retro_netpacket_disconnected_t)(uint16_t client_id
  * A callback interface for giving a core the ability to send and receive custom
  * network packets during a multiplayer session between two or more instances
  * of a libretro frontend.
+ *
+ * Normally during connection handshake the frontend will compare library_version
+ * used by both parties and show a warning if there is a difference. When the core
+ * supplies protocol_version, the frontend will check against this instead.
  *
  * @see RETRO_ENVIRONMENT_SET_NETPACKET_INTERFACE
  */

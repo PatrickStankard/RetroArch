@@ -9475,7 +9475,7 @@ static void netplay_send_cmd_netpacket(netplay_t *netplay, size_t conn_idx,
    if (!(connection->flags & NETPLAY_CONN_FLAG_ACTIVE)) return;
    if (connection->mode != NETPLAY_CONNECTION_PLAYING) return;
 
-   cmdbuf[0] = NETPLAY_CMD_NETPACKET;
+   cmdbuf[0] = htonl(NETPLAY_CMD_NETPACKET);
    cmdbuf[1] = htonl(len);
    cmdbuf[2] = htonl(pkt_client_id);
 
@@ -9495,22 +9495,25 @@ static void RETRO_CALLCONV netplay_netpacket_send_cb(int flags,
    netplay_t *netplay         = net_st->data;
    if (!netplay) return;
 
-   if (!netplay->is_server)
+   if (buf && len)
    {
-      /* client always sends packet to host, host will relay it if needed */
-      netplay_send_cmd_netpacket(netplay, 0, buf, len, client_id);
-   }
-   else if (client_id == RETRO_NETPACKET_BROADCAST)
-   {
-      /* send packet to all clients */
-      size_t i;
-      for (i = 0; i < netplay->connections_size; i++)
-         netplay_send_cmd_netpacket(netplay, i, buf, len, 0);
-   }
-   else if (client_id)
-   {
-      /* send packet to specific client */
-      netplay_send_cmd_netpacket(netplay, client_id-1, buf, len, 0);
+      if (!netplay->is_server)
+      {
+         /* client always sends packet to host, host will relay it if needed */
+         netplay_send_cmd_netpacket(netplay, 0, buf, len, client_id);
+      }
+      else if (client_id == RETRO_NETPACKET_BROADCAST)
+      {
+         /* send packet to all clients */
+         size_t i;
+         for (i = 0; i < netplay->connections_size; i++)
+            netplay_send_cmd_netpacket(netplay, i, buf, len, 0);
+      }
+      else if (client_id)
+      {
+         /* send packet to specific client */
+         netplay_send_cmd_netpacket(netplay, client_id-1, buf, len, 0);
+      }
    }
 
    if (flags & RETRO_NETPACKET_FLUSH_HINT)
