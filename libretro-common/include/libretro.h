@@ -3101,7 +3101,7 @@ struct retro_disk_control_ext_callback
  *
  * This function is not guaranteed to be thread-safe and must be called during
  * retro_run or any of the netpacket callbacks passed with this interface.
- * To flush queued packets, pass with buf NULL and RETRO_NETPACKET_FLUSH_HINT.
+ * To flush queued packets, call with buf NULL and RETRO_NETPACKET_FLUSH_HINT.
  */
 typedef void (RETRO_CALLCONV *retro_netpacket_send_t)(int flags, const void* buf, size_t len, uint16_t client_id);
 
