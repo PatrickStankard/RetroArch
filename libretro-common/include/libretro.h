@@ -3081,7 +3081,7 @@ struct retro_disk_control_ext_callback
 
 /* Netpacket flags for retro_netpacket_send_t */
 #define RETRO_NETPACKET_UNRELIABLE  0        /* Packet to be sent unreliable, depending on network quality it might not arrive. */
-#define RETRO_NETPACKET_RELIABLE    (1 << 0) /* Reliable packets are guaranteed to arrive at the target in the order they were send. */
+#define RETRO_NETPACKET_RELIABLE    (1 << 0) /* Reliable packets are guaranteed to arrive at the target in the order they were sent. */
 #define RETRO_NETPACKET_UNSEQUENCED (1 << 1) /* Packet will not be sequenced with other packets and may arrive out of order. Cannot be set on reliable packets. */
 #define RETRO_NETPACKET_FLUSH_HINT  (1 << 2) /* Request the packet and any previously buffered ones to be sent immediately */
 
@@ -3099,9 +3099,12 @@ struct retro_disk_control_ext_callback
  * Unreliable packets might not be supported by the frontend, but the flags can
  * still be specified. Reliable transmission will be used instead.
  *
+ * Calling this with the flag RETRO_NETPACKET_FLUSH_HINT will send off the
+ * packet and any previously buffered ones immediately and without blocking.
+ * To only flush previously queued packets, buf or len can be passed as NULL/0.
+ *
  * This function is not guaranteed to be thread-safe and must be called during
  * retro_run or any of the netpacket callbacks passed with this interface.
- * To flush queued packets, call with buf NULL and RETRO_NETPACKET_FLUSH_HINT.
  */
 typedef void (RETRO_CALLCONV *retro_netpacket_send_t)(int flags, const void* buf, size_t len, uint16_t client_id);
 
@@ -3110,6 +3113,7 @@ typedef void (RETRO_CALLCONV *retro_netpacket_send_t)(int flags, const void* buf
  * can be called. The core can perform this in a loop to do a blocking read,
  * i.e., wait for incoming data, but needs to handle stop getting called and
  * also give up after a short while to avoid freezing on a connection problem.
+ * It is a good idea to manually flush outgoing packets before calling this.
  *
  * This function is not guaranteed to be thread-safe and must be called during
  * retro_run or any of the netpacket callbacks passed with this interface.
@@ -3125,7 +3129,7 @@ typedef void (RETRO_CALLCONV *retro_netpacket_poll_receive_t)();
  *
  * The core must store the function pointer send_fn and use it whenever it
  * wants to send a packet. Optionally poll_receive_fn can be stored and used
- * when regular reciving between frames is not enough. These function pointers
+ * when regular receiving between frames is not enough. These function pointers
  * remain valid until the frontend calls retro_netpacket_stop_t.
  */
 typedef void (RETRO_CALLCONV *retro_netpacket_start_t)(uint16_t client_id, retro_netpacket_send_t send_fn, retro_netpacket_poll_receive_t poll_receive_fn);
