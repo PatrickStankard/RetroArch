@@ -475,22 +475,6 @@ typedef struct settings
 
 #ifdef ANDROID
       char input_android_physical_keyboard[255];
-      char input_android_player1_reserved_device[255];
-      char input_android_player2_reserved_device[255];
-      char input_android_player3_reserved_device[255];
-      char input_android_player4_reserved_device[255];
-      char input_android_player5_reserved_device[255];
-      char input_android_player6_reserved_device[255];
-      char input_android_player7_reserved_device[255];
-      char input_android_player8_reserved_device[255];
-      char input_android_player9_reserved_device[255];
-      char input_android_player10_reserved_device[255];
-      char input_android_player11_reserved_device[255];
-      char input_android_player12_reserved_device[255];
-      char input_android_player13_reserved_device[255];
-      char input_android_player14_reserved_device[255];
-      char input_android_player15_reserved_device[255];
-      char input_android_player16_reserved_device[255];
 #endif
 
       char input_reserved_devices[MAX_USERS][255];
