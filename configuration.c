@@ -1485,6 +1485,7 @@ bool config_overlay_enable_default(void)
 static struct config_array_setting *populate_settings_array(
       settings_t *settings, int *size)
 {
+   unsigned i                           = 0;
    unsigned count                       = 0;
    struct config_array_setting  *tmp    = (struct config_array_setting*)calloc(1, (*size + 1) * sizeof(struct config_array_setting));
 
