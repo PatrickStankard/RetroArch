@@ -1292,6 +1292,14 @@ static void handle_hotplug(android_input_t *android,
       strlcpy(name_buf, device_name, sizeof(name_buf));
    }
 
+   else if (strstr(device_name, "DragonRise Inc.   Generic   USB  Joystick"))
+   {
+      RARCH_LOG("Special Device Detected: %s\n", device_name);
+
+      *port = 4;
+      strlcpy(name_buf, device_name, sizeof(name_buf));
+   }
+
    /* Other uncommon devices
     * These are mostly remote control type devices, bind them always to port 0
     * And overwrite the binding whenever a controller button is pressed
