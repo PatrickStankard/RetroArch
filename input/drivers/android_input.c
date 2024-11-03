@@ -1262,6 +1262,36 @@ static void handle_hotplug(android_input_t *android,
       }
    }
 
+   /* TeamEncoder
+    * TE Four Player GamePad
+    */
+   else if (strstr(device_name, "TeamEncoderGP"))
+   {
+      RARCH_LOG("Special Device Detected: %s\n", device_name);
+
+      if (strstr(device_name, "TeamEncoderGP #1"))
+      {
+         *port = 0;
+      }
+
+      else if (strstr(device_name, "TeamEncoderGP #2"))
+      {
+         *port = 1;
+      }
+
+      else if (strstr(device_name, "TeamEncoderGP #3"))
+      {
+         *port = 2;
+      }
+
+      else if (strstr(device_name, "TeamEncoderGP #4"))
+      {
+         *port = 3;
+      }
+
+      strlcpy(name_buf, device_name, sizeof(name_buf));
+   }
+
    /* Other uncommon devices
     * These are mostly remote control type devices, bind them always to port 0
     * And overwrite the binding whenever a controller button is pressed
